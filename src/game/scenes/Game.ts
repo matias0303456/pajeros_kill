@@ -8,28 +8,30 @@ export class Game extends Scene {
 
     map: Phaser.Tilemaps.Tilemap;
     camera: Phaser.Cameras.Scene2D.Camera;
-    cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
+    cursors: Phaser.Types.Input.Keyboard.CursorKeys;
+    enemies: Phaser.Physics.Arcade.Group;
+    weapons: Phaser.Physics.Arcade.Group;
 
     player: Player;
-    enemies: Enemy[] = [];
-    weapons: Weapon[] = [];
 
     constructor() {
         super('Game');
     }
 
     create() {
-        this.cursors = this.input.keyboard?.createCursorKeys();
+        this.cursors = this.input.keyboard?.createCursorKeys()!;
 
         this.setMapAndSprites();
 
         this.setCamera();
-
     }
 
     update() {
         this.player.move();
-        this.enemies.forEach(enemy => enemy.chase());
+
+        if (Phaser.Input.Keyboard.JustDown(this.cursors?.shift)) {
+            this.player.shoot(this);
+        }
     }
 
     private setMapAndSprites() {
@@ -50,6 +52,8 @@ export class Game extends Scene {
         this.player = new Player(this, 400, 300, this.cursors);
         this.physics.add.collider(this.player, collisionLayer!);
 
+        this.enemies = this.physics.add.group({ classType: Enemy, runChildUpdate: true });
+        this.weapons = this.physics.add.group({ classType: Weapon, runChildUpdate: true });
         this.spawnEnemies(collisionLayer);
         this.spawnWeapons();
 
@@ -62,25 +66,33 @@ export class Game extends Scene {
             const random = Phaser.Math.Between(1, 2);
             const object = enemiesLayer?.objects.find(obj => obj.name === `enemy_spawn_${random}`);
             const enemy = new Enemy(this, object?.x as number, object?.y as number, 'enemy_1', this.player);
-            this.enemies.forEach(e => this.physics.add.collider(enemy, e));
-            this.physics.add.collider(enemy, collisionLayer!);
-            this.physics.add.collider(this.player, enemy);
-            this.enemies.push(enemy);
+            this.enemies.add(enemy);
+            this.physics.add.collider(this.enemies, collisionLayer!);
+            this.physics.add.collider(this.enemies, this.player, (_, playerObj) => {
+                playerObj.destroy();
+                this.scene.stop();
+            });
         }, 10000);
     }
 
     private spawnWeapons() {
         const enemiesLayer = this.map.getObjectLayer('objects');
         setInterval(() => {
-            if (this.weapons.length < 4) {
-                const random = Phaser.Math.Between(1, 4);
-                const object = enemiesLayer?.objects.find(obj => obj.name === `weapon_spawn_${random}`);
-                const weapon = new Weapon(this, object?.x as number, object?.y as number);
-                this.weapons.push(weapon);
-                this.physics.add.collider(weapon, this.player);
-                this.enemies.forEach(e => this.physics.add.collider(weapon, e));
+            if (this.weapons.children.size >= 4) return;
+            const random = Phaser.Math.Between(1, 4);
+            const object = enemiesLayer?.objects.find(obj => obj.name === `weapon_spawn_${random}`);
+            const weapon = new Weapon(this, object?.x as number, object?.y as number);
+            this.weapons.add(weapon);
+            this.physics.add.collider(this.weapons, this.enemies, (weaponObj, enemyObj) => {
+                weaponObj.destroy();
+                enemyObj.destroy();
             }
-        }, 10000);
+            );
+            this.physics.add.collider(this.weapons, this.player, () => {
+                this.player.incrementAmmo();
+                weapon.destroy();
+            });
+        }, 5000);
     }
 
     private setCamera() {

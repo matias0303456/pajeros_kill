@@ -1,8 +1,12 @@
+import { Scene } from "phaser";
+import { Weapon } from "./Weapon";
+
 export class Player extends Phaser.Physics.Arcade.Sprite {
 
-    cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
+    cursors: Phaser.Types.Input.Keyboard.CursorKeys;
 
-    private direction = new Phaser.Math.Vector2(0, 1);
+    private facingDirection: Phaser.Math.Vector2 = new Phaser.Math.Vector2(0, 1); // mirando hacia abajo por defecto
+    private ammo: number = 0;
 
     constructor(
         scene: Phaser.Scene,
@@ -15,7 +19,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this);
         scene.physics.add.existing(this);
 
-        this.cursors = cursors;
+        this.cursors = cursors!;
 
         this.setImmovable(true);
         this.setScale(2, 2);
@@ -30,19 +34,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         let velocityX = 0;
         let velocityY = 0;
 
-        if (this.cursors?.left.isDown) {
-            velocityX = -speed;
-        }
-        else if (this.cursors?.right.isDown) {
-            velocityX = speed;
-        }
-
-        if (this.cursors?.up.isDown) {
-            velocityY = -speed;
-        }
-        else if (this.cursors?.down.isDown) {
-            velocityY = speed;
-        }
+        if (this.cursors?.left.isDown) velocityX = -speed;
+        if (this.cursors?.right.isDown) velocityX = speed;
+        if (this.cursors?.up.isDown) velocityY = -speed;
+        if (this.cursors?.down.isDown) velocityY = speed;
 
         this.setVelocity(velocityX, velocityY);
 
@@ -51,11 +46,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if (body.velocity.length() > 0) {
             body.velocity.normalize().scale(speed);
 
-            this.direction
-                .set(body.velocity.x, body.velocity.y)
-                .normalize();
+            // 🔥 ACTUALIZAMOS SIEMPRE LA DIRECCIÓN REAL
+            this.facingDirection.set(
+                body.velocity.x,
+                body.velocity.y
+            ).normalize();
         }
 
+        // 🎬 Animaciones (independientes de la dirección real)
         if (velocityX < 0) {
             this.anims.play('player_walk_left', true);
         }
@@ -71,5 +69,35 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         else {
             this.anims.stop();
         }
+    }
+
+    shoot(scene: Scene & { weapons: Phaser.Physics.Arcade.Group }) {
+        if (this.ammo <= 0) return;
+
+        const weapon = scene.weapons.get(this.x, this.y) as Weapon;
+
+        if (!weapon) return;
+
+        weapon.setActive(true);
+        weapon.setVisible(true);
+
+        const speed = 500;
+        const dir = this.facingDirection.clone();
+
+        weapon.setVelocity(dir.x * speed, dir.y * speed);
+
+        this.decrementAmmo();
+    }
+
+    incrementAmmo() {
+        this.ammo++;
+    }
+
+    decrementAmmo() {
+        this.ammo--;
+    }
+
+    getAmmo() {
+        return this.ammo;
     }
 }

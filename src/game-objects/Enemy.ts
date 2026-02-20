@@ -27,6 +27,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.setOffset(5, 25);
     }
 
+    update() {
+        this.chase();
+    }
+
     chase() {
         this.scene.physics.moveToObject(this, this.player, 80);
 
