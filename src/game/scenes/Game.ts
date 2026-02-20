@@ -78,28 +78,38 @@ export class Game extends Scene {
 
     private spawnEnemies(collisionLayer: Phaser.Tilemaps.TilemapLayer | null) {
         const enemiesLayer = this.map.getObjectLayer('objects');
-        setInterval(() => {
-            const random = Phaser.Math.Between(1, 2);
-            const object = enemiesLayer?.objects.find(obj => obj.name === `enemy_spawn_${random}`);
-            const enemy = new Enemy(this, object?.x as number, object?.y as number, 'enemy_1', this.player);
-            this.enemies.add(enemy);
-            this.physics.add.collider(this.enemies, collisionLayer!);
-            this.physics.add.collider(this.enemies, this.player, (_, playerObj) => {
-                playerObj.destroy();
-                this.scene.start('GameOver');
-            });
-        }, 7000);
+        this.time.addEvent({
+            delay: 7000,
+            callback: () => {
+                const random = Phaser.Math.Between(1, 2);
+                const object = enemiesLayer?.objects.find(obj => obj.name === `enemy_spawn_${random}`);
+                const enemy = new Enemy(this, object?.x as number, object?.y as number, 'enemy_1', this.player);
+                this.enemies.add(enemy);
+                this.physics.add.collider(this.enemies, collisionLayer!);
+                this.physics.add.collider(this.enemies, this.player, (_, playerObj) => {
+                    playerObj.destroy();
+                    this.scene.start('GameOver');
+                });
+            },
+            callbackScope: this,
+            loop: true
+        });
     }
 
     private spawnWeapons() {
         const enemiesLayer = this.map.getObjectLayer('objects');
         if (this.pickups.children.size >= 4) return;
-        setInterval(() => {
-            const random = Phaser.Math.Between(1, 4);
-            const object = enemiesLayer?.objects.find(obj => obj.name === `weapon_spawn_${random}`);
-            const weapon = new Weapon(this, object?.x as number, object?.y as number);
-            this.pickups.add(weapon);
-        }, 5000);
+        this.time.addEvent({
+            delay: 5000,
+            callback: () => {
+                const random = Phaser.Math.Between(1, 4);
+                const object = enemiesLayer?.objects.find(obj => obj.name === `weapon_spawn_${random}`);
+                const weapon = new Weapon(this, object?.x as number, object?.y as number);
+                this.pickups.add(weapon);
+            },
+            callbackScope: this,
+            loop: true
+        });
         this.physics.add.overlap(this.player, this.pickups, (_, o2) => {
             this.player.incrementAmmo();
             o2.destroy();
