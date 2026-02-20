@@ -10,9 +10,13 @@ export class Game extends Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
     cursors: Phaser.Types.Input.Keyboard.CursorKeys;
     enemies: Phaser.Physics.Arcade.Group;
-    weapons: Phaser.Physics.Arcade.Group;
+    projectiles: Phaser.Physics.Arcade.Group;
+    pickups: Phaser.Physics.Arcade.Group;
 
     player: Player;
+    ammoText!: Phaser.GameObjects.Text;
+
+    private scoreText!: Phaser.GameObjects.Text;
 
     constructor() {
         super('Game');
@@ -24,6 +28,16 @@ export class Game extends Scene {
         this.setMapAndSprites();
 
         this.setCamera();
+
+        this.scoreText = this.add.text(20, 20, 'Puntos: 0', {
+            fontSize: '24px',
+            color: '#ffffff'
+        });
+
+        this.ammoText = this.add.text(680, 20, 'Ammo: 0', {
+            fontSize: '24px',
+            color: '#ffffff'
+        });
     }
 
     update() {
@@ -53,7 +67,14 @@ export class Game extends Scene {
         this.physics.add.collider(this.player, collisionLayer!);
 
         this.enemies = this.physics.add.group({ classType: Enemy, runChildUpdate: true });
-        this.weapons = this.physics.add.group({ classType: Weapon, runChildUpdate: true });
+        this.projectiles = this.physics.add.group({ classType: Weapon });
+        this.physics.add.collider(this.projectiles, this.enemies, (projectile, enemy) => {
+            projectile.destroy();
+            enemy.destroy();
+            this.player.incrementScore();
+            this.scoreText.setText(`Puntos: ${this.player.getScore()}`);
+        });
+        this.pickups = this.physics.add.group({ classType: Weapon });
         this.spawnEnemies(collisionLayer);
         this.spawnWeapons();
 
@@ -70,36 +91,30 @@ export class Game extends Scene {
             this.physics.add.collider(this.enemies, collisionLayer!);
             this.physics.add.collider(this.enemies, this.player, (_, playerObj) => {
                 playerObj.destroy();
-                this.scene.stop();
+                this.scene.start('GameOver');
             });
         }, 10000);
     }
 
     private spawnWeapons() {
         const enemiesLayer = this.map.getObjectLayer('objects');
+        if (this.pickups.children.size >= 4) return;
         setInterval(() => {
-            if (this.weapons.children.size >= 4) return;
             const random = Phaser.Math.Between(1, 4);
             const object = enemiesLayer?.objects.find(obj => obj.name === `weapon_spawn_${random}`);
             const weapon = new Weapon(this, object?.x as number, object?.y as number);
-            this.weapons.add(weapon);
-            this.physics.add.collider(this.weapons, this.enemies, (weaponObj, enemyObj) => {
-                weaponObj.destroy();
-                enemyObj.destroy();
-            }
-            );
-            this.physics.add.collider(this.weapons, this.player, () => {
-                this.player.incrementAmmo();
-                weapon.destroy();
-            });
+            this.pickups.add(weapon);
         }, 5000);
+        this.physics.add.overlap(this.player, this.pickups, (_, o2) => {
+            this.player.incrementAmmo();
+            o2.destroy();
+            this.ammoText.setText(`Ammo: ${this.player.getAmmo()}`);
+        }, undefined, this);
     }
 
     private setCamera() {
         this.camera = this.cameras.main;
         this.camera.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
-        this.camera.startFollow(this.player, true, 0.1, 0.1);
-        this.camera.setZoom(1.5);
         this.camera.setRoundPixels(true);
     }
 

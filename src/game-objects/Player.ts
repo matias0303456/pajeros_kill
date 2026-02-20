@@ -7,6 +7,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     private facingDirection: Phaser.Math.Vector2 = new Phaser.Math.Vector2(0, 1); // mirando hacia abajo por defecto
     private ammo: number = 0;
+    private score: number = 0;
 
     constructor(
         scene: Phaser.Scene,
@@ -22,7 +23,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.cursors = cursors!;
 
         this.setImmovable(true);
-        this.setScale(2, 2);
+        this.setScale(3, 3);
         this.setCollideWorldBounds(true);
         this.setSize(20, 5);
         this.setOffset(5, 25);
@@ -71,15 +72,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-    shoot(scene: Scene & { weapons: Phaser.Physics.Arcade.Group }) {
+    shoot(scene: Scene & { projectiles: Phaser.Physics.Arcade.Group, ammoText: Phaser.GameObjects.Text }) {
         if (this.ammo <= 0) return;
 
-        const weapon = scene.weapons.get(this.x, this.y) as Weapon;
-
-        if (!weapon) return;
-
-        weapon.setActive(true);
-        weapon.setVisible(true);
+        const weapon = new Weapon(scene, this.x, this.y);
+        scene.projectiles.add(weapon);
 
         const speed = 500;
         const dir = this.facingDirection.clone();
@@ -87,6 +84,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         weapon.setVelocity(dir.x * speed, dir.y * speed);
 
         this.decrementAmmo();
+        scene.ammoText.setText(`Ammo: ${this.getAmmo()}`);
     }
 
     incrementAmmo() {
@@ -99,5 +97,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     getAmmo() {
         return this.ammo;
+    }
+
+    incrementScore() {
+        this.score += 10;
+    }
+
+    getScore() {
+        return this.score;
     }
 }

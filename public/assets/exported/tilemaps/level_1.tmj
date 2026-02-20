@@ -93,51 +93,51 @@
                 }, 
                 {
                  "ellipse":true,
-                 "height":40,
+                 "height":15,
                  "id":6,
                  "name":"weapon_spawn_2",
                  "rotation":0,
                  "type":"weapon",
                  "visible":true,
-                 "width":86.6666666666667,
-                 "x":437.333333333333,
-                 "y":282.666666666667
+                 "width":14.6666666666667,
+                 "x":475.333333333333,
+                 "y":278.666666666667
                 }, 
                 {
                  "ellipse":true,
-                 "height":36,
+                 "height":16,
                  "id":7,
                  "name":"weapon_spawn_4",
                  "rotation":0,
                  "type":"weapon",
                  "visible":true,
-                 "width":85.3333333333334,
-                 "x":629.333333333333,
-                 "y":480
+                 "width":23.3333333333334,
+                 "x":661.333333333333,
+                 "y":471
                 }, 
                 {
                  "ellipse":true,
-                 "height":36,
+                 "height":12,
                  "id":8,
                  "name":"weapon_spawn_1",
                  "rotation":0,
                  "type":"weapon",
                  "visible":true,
-                 "width":89.3333333333333,
-                 "x":82.6666666666667,
-                 "y":256
+                 "width":19.3333333333333,
+                 "x":118.666666666667,
+                 "y":250
                 }, 
                 {
                  "ellipse":true,
-                 "height":37.3333333333333,
+                 "height":13.3333333333333,
                  "id":9,
                  "name":"weapon_spawn_3",
                  "rotation":0,
                  "type":"weapon",
                  "visible":true,
-                 "width":85.3333333333333,
-                 "x":214.666666666667,
-                 "y":477.333333333333
+                 "width":17.3333333333333,
+                 "x":247.666666666667,
+                 "y":471.333333333333
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -205,7 +205,7 @@
          "margin":0,
          "name":"furniture",
          "spacing":0,
-         "tilecount":48,
+         "tilecount":32,
          "tileheight":32,
          "tilewidth":32
         }],
