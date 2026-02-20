@@ -20,6 +20,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.player = player;
         this.name = name;
 
+        this.setImmovable(true);
         this.setScale(2, 2);
         this.setCollideWorldBounds(true);
         this.setSize(20, 5);

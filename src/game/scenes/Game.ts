@@ -2,6 +2,7 @@ import { Scene } from 'phaser';
 
 import { Player } from '../../game-objects/Player';
 import { Enemy } from '../../game-objects/Enemy';
+import { Weapon } from '../../game-objects/Weapon';
 
 export class Game extends Scene {
 
@@ -11,6 +12,7 @@ export class Game extends Scene {
 
     player: Player;
     enemies: Enemy[] = [];
+    weapons: Weapon[] = [];
 
     constructor() {
         super('Game');
@@ -23,7 +25,6 @@ export class Game extends Scene {
 
         this.setCamera();
 
-        // this.debug(collisionLayer);
     }
 
     update() {
@@ -50,17 +51,35 @@ export class Game extends Scene {
         this.physics.add.collider(this.player, collisionLayer!);
 
         this.spawnEnemies(collisionLayer);
+        this.spawnWeapons();
+
+        // this.debug(collisionLayer);
     }
 
     private spawnEnemies(collisionLayer: Phaser.Tilemaps.TilemapLayer | null) {
-        const enemiesLayer = this.map.getObjectLayer('enemies');
+        const enemiesLayer = this.map.getObjectLayer('objects');
         setInterval(() => {
             const random = Phaser.Math.Between(1, 2);
             const object = enemiesLayer?.objects.find(obj => obj.name === `enemy_spawn_${random}`);
             const enemy = new Enemy(this, object?.x as number, object?.y as number, 'enemy_1', this.player);
-            this.enemies.push(enemy);
+            this.enemies.forEach(e => this.physics.add.collider(enemy, e));
             this.physics.add.collider(enemy, collisionLayer!);
             this.physics.add.collider(this.player, enemy);
+            this.enemies.push(enemy);
+        }, 10000);
+    }
+
+    private spawnWeapons() {
+        const enemiesLayer = this.map.getObjectLayer('objects');
+        setInterval(() => {
+            if (this.weapons.length < 4) {
+                const random = Phaser.Math.Between(1, 4);
+                const object = enemiesLayer?.objects.find(obj => obj.name === `weapon_spawn_${random}`);
+                const weapon = new Weapon(this, object?.x as number, object?.y as number);
+                this.weapons.push(weapon);
+                this.physics.add.collider(weapon, this.player);
+                this.enemies.forEach(e => this.physics.add.collider(weapon, e));
+            }
         }, 10000);
     }
 

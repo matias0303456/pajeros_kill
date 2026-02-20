@@ -2,7 +2,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
 
-    constructor(scene: Phaser.Scene, x: number, y: number, cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined) {
+    private direction = new Phaser.Math.Vector2(0, 1);
+
+    constructor(
+        scene: Phaser.Scene,
+        x: number,
+        y: number,
+        cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined
+    ) {
         super(scene, x, y, 'player_walk_down');
 
         scene.add.existing(this);
@@ -10,6 +17,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
         this.cursors = cursors;
 
+        this.setImmovable(true);
         this.setScale(2, 2);
         this.setCollideWorldBounds(true);
         this.setSize(20, 5);
@@ -36,13 +44,18 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             velocityY = speed;
         }
 
-        // Aplicar velocidad
         this.setVelocity(velocityX, velocityY);
 
-        // Normalizar para que diagonal no sea más rápido
-        this.body?.velocity.normalize().scale(speed);
+        const body = this.body as Phaser.Physics.Arcade.Body;
 
-        // --- Animaciones ---
+        if (body.velocity.length() > 0) {
+            body.velocity.normalize().scale(speed);
+
+            this.direction
+                .set(body.velocity.x, body.velocity.y)
+                .normalize();
+        }
+
         if (velocityX < 0) {
             this.anims.play('player_walk_left', true);
         }

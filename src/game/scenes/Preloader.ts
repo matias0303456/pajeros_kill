@@ -29,7 +29,7 @@ export class Preloader extends Scene {
         this.load.setPath('assets/exported');
 
         this.load.tilemapTiledJSON('level_1', 'tilemaps/level_1.tmj');
-
+ 
         this.load.image('room', 'tilesets/room.png');
         this.load.image('furniture', 'tilesets/furniture.png');
 
@@ -42,6 +42,8 @@ export class Preloader extends Scene {
         this.load.spritesheet('enemy_1_walk_down', 'spritesheets/enemy_1_walk_down.png', { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('enemy_1_walk_right', 'spritesheets/enemy_1_walk_right.png', { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('enemy_1_walk_left', 'spritesheets/enemy_1_walk_left.png', { frameWidth: 32, frameHeight: 32 });
+        
+        this.load.spritesheet('weapon', 'spritesheets/weapon.png', { frameWidth: 32, frameHeight: 32 });
 
     }
 
