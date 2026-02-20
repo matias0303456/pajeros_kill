@@ -72,7 +72,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-    shoot(scene: Scene & { projectiles: Phaser.Physics.Arcade.Group, ammoText: Phaser.GameObjects.Text }) {
+    shoot(scene: Scene & { projectiles: Phaser.Physics.Arcade.Group}) {
         if (this.ammo <= 0) return;
 
         const weapon = new Weapon(scene, this.x, this.y);
@@ -84,7 +84,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         weapon.setVelocity(dir.x * speed, dir.y * speed);
 
         this.decrementAmmo();
-        scene.ammoText.setText(`Ammo: ${this.getAmmo()}`);
     }
 
     incrementAmmo() {

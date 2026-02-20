@@ -14,7 +14,9 @@ export class Game extends Scene {
     pickups: Phaser.Physics.Arcade.Group;
 
     player: Player;
-    ammoText!: Phaser.GameObjects.Text;
+    private ammoUI!: Phaser.GameObjects.Container;
+    private ammoIcon!: Phaser.GameObjects.Image;
+    private ammoText!: Phaser.GameObjects.Text;
 
     private scoreText!: Phaser.GameObjects.Text;
 
@@ -27,17 +29,9 @@ export class Game extends Scene {
 
         this.setMapAndSprites();
 
+        this.setUI();
+
         this.setCamera();
-
-        this.scoreText = this.add.text(20, 20, 'Puntos: 0', {
-            fontSize: '24px',
-            color: '#ffffff'
-        });
-
-        this.ammoText = this.add.text(680, 20, 'Ammo: 0', {
-            fontSize: '24px',
-            color: '#ffffff'
-        });
     }
 
     update() {
@@ -45,6 +39,7 @@ export class Game extends Scene {
 
         if (Phaser.Input.Keyboard.JustDown(this.cursors?.shift)) {
             this.player.shoot(this);
+            this.ammoText.setText(String(this.player.getAmmo()));
         }
     }
 
@@ -93,7 +88,7 @@ export class Game extends Scene {
                 playerObj.destroy();
                 this.scene.start('GameOver');
             });
-        }, 10000);
+        }, 7000);
     }
 
     private spawnWeapons() {
@@ -108,14 +103,41 @@ export class Game extends Scene {
         this.physics.add.overlap(this.player, this.pickups, (_, o2) => {
             this.player.incrementAmmo();
             o2.destroy();
-            this.ammoText.setText(`Ammo: ${this.player.getAmmo()}`);
+            this.ammoText.setText(String(this.player.getAmmo()));
         }, undefined, this);
+    }
+
+    private setUI() {
+        this.scoreText = this.add.text(150, 125, 'Puntos: 0', {
+            fontSize: '24px',
+            color: '#ffffff'
+        });
+
+        this.scoreText.setScrollFactor(0);
+
+        this.ammoIcon = this.add.image(550, 90, 'weapon');
+        this.ammoIcon.setOrigin(0, 0);
+        this.ammoIcon.setScale(1.5)
+
+        this.ammoText = this.add.text(610, 104, '0', {
+            fontSize: '24px',
+            color: '#ffffff'
+        });
+
+        this.ammoUI = this.add.container(20, 20, [
+            this.ammoIcon,
+            this.ammoText
+        ]);
+
+        this.ammoUI.setScrollFactor(0);
     }
 
     private setCamera() {
         this.camera = this.cameras.main;
         this.camera.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
         this.camera.setRoundPixels(true);
+        this.camera.setZoom(1.5);
+        this.camera.startFollow(this.player, true, 0.1, 0.1)
     }
 
     // private debug(collisionLayer: Phaser.Tilemaps.TilemapLayer | null) {
